@@ -238,7 +238,7 @@ class Editor:
         self.crlf = self.bom = False
         self.dialog = None
         self.status_was = None
-        # A kagura.skk.SkkEngine in a popup style (modern or classic), or None:
+        # A kdesk.skk.SkkEngine in a popup style (modern or classic), or None:
         # its candidates appear in a popup under the preedit and its mode in
         # the menu bar, so the status line holds only the document's.
         self.ime = ime
@@ -460,10 +460,10 @@ def sleep_ms(ms):
 def input_chain(app, clock=None):
     """The terminal decoder, with the SKK input method in front of the desktop
     when the editor has one (a lone LF is then Ctrl+J, the SKK mode key)."""
-    from kagura.keyinput import TerminalKeys
+    from kdesk.keyinput import TerminalKeys
     if app.ime is None:
         return TerminalKeys(app.desk) if clock is None else TerminalKeys(app.desk, clock=clock)
-    from kagura.skk import SkkInput
+    from kdesk.skk import SkkInput
     sink = SkkInput(app.desk, app.ime)
     if clock is None:
         return TerminalKeys(sink, lone_lf_ctrl_j=True)
@@ -471,7 +471,7 @@ def input_chain(app, clock=None):
 
 
 def keyboard(app, source=None, idle_ms=5):
-    from kagura.keyinput import StdinSource
+    from kdesk.keyinput import StdinSource
     keys = input_chain(app)
     src = source if source is not None else StdinSource()
     try:
@@ -568,7 +568,7 @@ def tour(app, step, key_ms=0, step_ms=0):
 def main(script=False, desk=None, docs=None, out=print, key_ms=None, step_ms=None, dump=None):
     own = desk is None
     if own:
-        from kagura.desktop import Desktop
+        from kdesk.desktop import Desktop
         desk = Desktop(menus=MENUS, cursor=False)
     if key_ms is None:
         key_ms = 60 if own else 0

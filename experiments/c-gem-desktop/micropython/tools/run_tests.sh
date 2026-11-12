@@ -12,10 +12,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 EXP="$ROOT/experiments/c-gem-desktop/micropython"
 OUT="${OUT:-$ROOT/build/c-gem-mp}"
-bash "$ROOT/software/desktop/tools/test.sh"
+bash "$ROOT/tools/test.sh"
 cmake -S "$EXP" -B "$OUT" -DCMAKE_BUILD_TYPE=Release >/dev/null
 cmake --build "$OUT" -j"$(nproc)" >/dev/null
-MP="$(bash "$ROOT/software/desktop/tools/build_unix.sh")"
+MP="$(bash "$ROOT/tools/build_unix.sh")"
 "$OUT/kd_ref_demo" > "$OUT/ref_demo.txt"
 "$MP" "$EXP/demo/demo.py" > "$OUT/mp_demo.txt"
 if diff "$OUT/ref_demo.txt" "$OUT/mp_demo.txt"; then

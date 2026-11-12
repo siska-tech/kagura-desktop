@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # KAGURA native desktop library, host build and tests (GCC or Clang):
-#   cmake -S software/desktop -B build/desktop -DCMAKE_BUILD_TYPE=Release
+#   cmake -S . -B build/desktop -DCMAKE_BUILD_TYPE=Release [-DKAGURA_SDK_DIR=...]
 #   cmake --build build/desktop && ctest --test-dir build/desktop
 # The MicroPython module is built by the port (binding/micropython.cmake
 # for rp2, binding/micropython.mk for unix); tools/test.sh runs both.
@@ -10,7 +10,9 @@ project(kagura_desktop C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Werror)
-set(FONT ${CMAKE_CURRENT_SOURCE_DIR}/../micropython/fonts/misaki8.kfnt)
+# The KAGURA SDK checkout: only its Misaki font asset is used here (sdk/).
+include(${CMAKE_CURRENT_SOURCE_DIR}/sdk/kagura_sdk.cmake)
+set(FONT ${KAGURA_SDK_FONT})
 
 # Native text: UTF-8 decoding, KJ8F lookup and the Misaki font in rodata.
 add_library(kj_text STATIC text/kj_text.c text/kj_misaki8.c)
@@ -39,7 +41,7 @@ if(Python3_FOUND)
     add_executable(kj_oracle tests/oracle.c)
     target_link_libraries(kj_oracle kj_text)
     add_test(NAME text_oracle COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR}/tests/oracle.py
-             $<TARGET_FILE:kj_oracle>)
+             $<TARGET_FILE:kj_oracle> ${FONT})
 endif()
 
 # The retained layer and its mutants (each must fail the tests).

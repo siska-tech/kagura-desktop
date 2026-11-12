@@ -34,13 +34,13 @@ spec.loader.exec_module(kbd)
 
 
 def example(name):
-    src = (ROOT / 'software/micropython/examples' / name).read_text(encoding='utf8')
+    src = (ROOT / 'apps' / name).read_text(encoding='utf8')
     return src.split("\nif __name__ == '__main__':")[0] + '\n'
 
 
 BENCH = r'''
 import gc, time, micropython, machine
-from kagura.desktop import Desktop
+from kdesk.desktop import Desktop
 # Stack high-water: paint the unused part of core 0's C stack (8 KB below
 # 0x20042000; core 1 is idle) and find the deepest overwritten word afterwards.
 STACK_BOTTOM, STACK_TOP = 0x20040000, 0x20042000
@@ -56,20 +56,17 @@ try:
     desk.present()
     gc.collect()
     print('HEAP free_with_editor', gc.mem_free())
-    # The session's run sink, timed: FPGA write and FENCE per run of tiles.
+    # The session's run sink, timed: one TilePlane.write per run of tiles.
+    # It is the FPGA write and its FENCE together, so the fence column is 0
+    # (logs before the SDK split timed them apart).
     link = [0, 0, 0]
-    lw, lf, dev = desk._lwrite, desk._lfence, desk.device
+    write = desk._write
     def timed_sink(first, data):
         t0 = time.ticks_us()
-        lw(first * 32, data, dev.timeout_us)
-        t1 = time.ticks_us()
-        lf(dev.timeout_us)
-        t2 = time.ticks_us()
-        link[0] += time.ticks_diff(t1, t0)
-        link[1] += time.ticks_diff(t2, t1)
+        write(first, data)
+        link[0] += time.ticks_diff(time.ticks_us(), t0)
         link[2] += 1
-    if lw is not None:
-        desk._sink = timed_sink
+    desk._sink = timed_sink
     def p(v, q):
         return v[min(len(v) - 1, len(v) * q // 100)]
     def run(name, fn, n):
@@ -153,7 +150,7 @@ print('CONSOLE paused', kagura_console.paused, 'error', kagura_console.last_erro
 
 LIVE = r'''
 import gc
-from kagura.desktop import Desktop
+from kdesk.desktop import Desktop
 desk = Desktop(menus=MENUS, cursor=False)
 try:
     app = Editor(desk, ram_docs(blocks=40), 'キーボード')
@@ -193,8 +190,8 @@ print('SKK done; free', gc.mem_free(), 'console paused', kagura_console.paused)
 
 SKK_LIVE = r'''
 import gc
-from kagura.desktop import Desktop
-from kagura import skk
+from kdesk.desktop import Desktop
+from kdesk import skk
 desk = Desktop(menus=de.MENUS, cursor=False)
 try:
     app = de.Editor(desk, de.Documents('/docs'), 'キーボード', ime=skk.SkkEngine(skk.test_dictionary(), style=skk.MODERN))
@@ -214,8 +211,8 @@ print('CLOSED free', gc.mem_free(), 'console_paused', kagura_console.paused)
 SKK_SOAK = r'''
 import gc, time
 from array import array
-from kagura.desktop import Desktop
-from kagura import skk, regs as R
+from kdesk.desktop import Desktop
+from kdesk import skk
 desk = Desktop(menus=de.MENUS, cursor=False)
 try:
     app = de.Editor(desk, de.Documents('/docs'), 'ソーク', ime=skk.SkkEngine(skk.test_dictionary(), style=skk.MODERN))
@@ -245,7 +242,7 @@ try:
             w.set_text(ed, '')
         if n %% 5 == 0:
             desk.invalidate(0, 0, 320, 200)
-            ok = desk.present() == 0 and desk.device.read_reg(R.REG_ERROR_CODE) == 0 and not app.ime.active()
+            ok = desk.present() == 0 and desk.plane.error_code() == 0 and not app.ime.active()
             checks += 1
             bad += not ok
             gc.collect()
@@ -276,7 +273,7 @@ TEXT = ('神楽メモ帳でキーボードから入力しています。\n'
 def skk_script_bytes():
     """The byte chunks of desktop_skk.SCRIPT, read as a literal (not executed)."""
     import ast
-    tree = ast.parse((ROOT / 'software/micropython/examples/desktop_skk.py').read_text(encoding='utf8'))
+    tree = ast.parse((ROOT / 'apps/desktop_skk.py').read_text(encoding='utf8'))
     for node in tree.body:
         if isinstance(node, ast.Assign) and getattr(node.targets[0], 'id', '') == 'SCRIPT':
             return [data for data, _ in ast.literal_eval(node.value)]
@@ -361,7 +358,7 @@ def main():
             b.run(BENCH, timeout=300)
         elif args.phase.startswith('skk'):
             # desktop_skk imports desktop_editor; from RAM, the editor's globals
-            # stand in for it (kagura.skk is frozen in the firmware).
+            # stand in for it (kdesk.skk is frozen in the firmware).
             demo = example('desktop_skk.py').replace('import desktop_editor as de\n', SHOWCASE_NS)
             b.run(free)
             b.run(lib)

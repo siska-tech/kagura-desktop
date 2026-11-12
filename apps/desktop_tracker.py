@@ -1196,7 +1196,7 @@ def sleep_ms(ms):
 
 
 def keyboard(app, source=None, idle_ms=2):
-    from kagura.keyinput import TerminalKeys, StdinSource
+    from kdesk.keyinput import TerminalKeys, StdinSource
     keys = TerminalKeys(app.desk)
     src = source if source is not None else StdinSource()
     try:
@@ -1383,7 +1383,7 @@ def main(script=False, desk=None, audio=None, files=None, out=print, key_ms=None
          loops=None, dump=None):
     own = desk is None
     if own:
-        from kagura.desktop import Desktop
+        from kdesk.desktop import Desktop
         desk = Desktop(menus=MENUS, cursor=False)
     own_audio = audio is None
     if own_audio:

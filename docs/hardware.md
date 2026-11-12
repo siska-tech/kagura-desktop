@@ -42,7 +42,7 @@ This needs a working REPL to enter BOOTSEL; otherwise hold BOOTSEL while pluggin
 | check | result |
 |---|---|
 | normal boot, REPL, console on HDMI, FPGA detection (ABI 0.6) | yes, after every flash and reset |
-| `import kagura_desktop`, `kagura.desktop` | yes |
+| `import kagura_desktop`, `kdesk.desktop` | yes |
 | 11 tour scenes: framebuffer CRC32 equal to the host run | 11 of 11 |
 | 11 scenes: CRC32 of the 32,000 B read back from VRAM equal to the host's TILE4 image | 11 of 11 |
 | `ERROR_CODE` after every scene | 0 |

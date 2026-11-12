@@ -2,7 +2,7 @@
 """SKK Japanese input in 神楽メモ帳: a scripted, reproducible demonstration.
 
 The editor (desktop_editor.Editor) runs with the SKK input method
-(kagura.skk) in front of it. The script is the bytes a terminal sends for
+(kdesk.skk) in front of it. The script is the bytes a terminal sends for
 each key - romaji, spaces, Enter (CR), Escape, Ctrl+J (LF) - fed through the
 same decoder as real typing, so the whole input path is exercised. Scene
 CRCs are equal on the host and the board.
@@ -27,7 +27,7 @@ import time
 import kagura_desktop as kd
 
 import desktop_editor as de
-from kagura import skk
+from kdesk import skk
 
 # (bytes as a terminal sends them, scene name or None)
 SCRIPT = (
@@ -146,10 +146,10 @@ def tour(app, step, key_ms=0, step_ms=0):
 def vram_crc(desk):
     """CRC32 of the 32,000 pattern bytes read back from the FPGA (board only)."""
     import binascii
-    buf = bytearray(1000)
+    buf = bytearray(800)
     crc = 0
-    for off in range(0, 32000, 1000):
-        desk.device.read_memory_into(off, buf)
+    for first in range(0, 1000, 25):
+        desk.plane.read(first, buf)
         crc = binascii.crc32(buf, crc)
     return crc
 
@@ -157,7 +157,7 @@ def vram_crc(desk):
 def main(desk=None, out=print, key_ms=None, step_ms=None, dump=None):
     own = desk is None
     if own:
-        from kagura.desktop import Desktop
+        from kdesk.desktop import Desktop
         desk = Desktop(menus=de.MENUS, cursor=False)
     if key_ms is None:
         key_ms = 70 if own else 0
@@ -173,8 +173,7 @@ def main(desk=None, out=print, key_ms=None, step_ms=None, dump=None):
         mirror = getattr(desk, 'mirror', None)
         extra = ' tile4 %08x' % binascii.crc32(mirror) if mirror else ''
         if own:
-            from kagura import regs as R
-            extra = ' vram %08x error %d' % (vram_crc(desk), desk.device.read_reg(R.REG_ERROR_CODE))
+            extra = ' vram %08x error %d' % (vram_crc(desk), desk.plane.error_code())
         out('SCENE %d %s %08x %d%s' % (scenes[0], name, desk.crc(), tiles, extra))
         if dump:
             buf = bytearray(32000)

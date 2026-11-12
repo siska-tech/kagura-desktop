@@ -33,7 +33,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'sdk'))
+import kagura_sdk  # noqa: E402  (the SDK's layout)
+sys.path.insert(0, str(kagura_sdk.TOOLS))  # SDK device helpers
 import rp2040_sram_bench as stage1  # noqa: E402
 
 FFMPEG = os.environ.get('FFMPEG', 'ffmpeg')

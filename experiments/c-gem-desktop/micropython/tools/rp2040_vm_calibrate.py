@@ -17,7 +17,9 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parents[1] / 'tools'))
+sys.path.insert(0, str(HERE.parents[3] / 'sdk'))
+import kagura_sdk  # noqa: E402  (the SDK's layout)
+sys.path.insert(0, str(kagura_sdk.TOOLS))  # SDK device helpers
 import rp2040_sram_bench as stage1  # noqa: E402
 
 RESUME = 'try:\n kagura_console.resume()\nexcept NameError:\n pass\n'

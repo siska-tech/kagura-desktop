@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-// kj_misaki8: the repository's Misaki KJ8F font (software/micropython/fonts/
+// kj_misaki8: the KAGURA SDK's Misaki KJ8F font (software/micropython/fonts/
 // misaki8.kfnt, 7,171 glyphs, 71,718 B) embedded unchanged in read-only
 // memory with .incbin, so it stays in flash on the RP2040. The font data is
 // licensed separately (LicenseRef-Misaki, see NOTICE.md).
 //
 // The build passes the font's path: -DKJ_MISAKI8_PATH="\"/abs/path/misaki8.kfnt\""
-// (software/desktop/binding/micropython.cmake and .mk, CMakeLists.txt).
+// (binding/micropython.cmake and .mk, CMakeLists.txt: from KAGURA_SDK_DIR).
 // GCC/Clang only. The assembler stops the build if the file's size changes.
 #include "kj_text.h"
 

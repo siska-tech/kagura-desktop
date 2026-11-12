@@ -1,10 +1,27 @@
-# KAGURA native desktop
+# kagura-desktop
 
-A GEM-style desktop in C for KAGURA-9, with Japanese text, built into the KAGURA MicroPython firmware so that Python applications can use it.
-It grew out of `experiments/c-gem-desktop` (#68: design, tests, RP2040 and HDMI acceptance) and its MicroPython binding (#75, stage 3A).
+A GEM-style desktop in C for KAGURA-9, with Japanese text, built into KAGURA MicroPython firmware so that Python applications can use it: windows and menus, the 神楽メモ帳 editor, SKK Japanese input and the 神楽トラッカー music tracker.
+It grew out of `experiments/c-gem-desktop` (siska-tech/kagura#68: design, tests, RP2040 and HDMI acceptance) and its MicroPython binding (siska-tech/kagura#75, stage 3A).
+
+This repository was split from [the KAGURA SDK](https://github.com/siska-tech/kagura) (siska-tech/kagura) with its history; earlier pull requests are referenced as `siska-tech/kagura#N`.
+
+## The KAGURA SDK
+
+The desktop is an application of the SDK. It uses only the SDK's public interfaces and never the FPGA's registers, VRAM layout or RTL:
+
+| SDK interface | Used for |
+|---|---|
+| `kagura.tileplane.TilePlane` | the 40x25 tile grid on the display: open, show, pattern runs, readback, ERROR_CODE |
+| `kagura.console.active()`, `pause()`, `resume()` | taking the screen from the HDMI console and giving it back |
+| `kagura.music`, `kagura_audio` | the tracker's playback and the scope |
+| `software/micropython/boards/*` with `USER_C_MODULES` and `FROZEN_MANIFEST` | firmware: the SDK board, plus `kagura_desktop` and `kdesk` |
+| `software/micropython/fonts/misaki8.kfnt` | the Japanese font, embedded unchanged |
+| `tools/build-micropython-unix.sh`, `tools/rp2040-firmware.py`, `tools/rp2040_sram_bench.py` | unix port builds, flashing, device helpers |
+
+Scripts find the SDK checkout in `KAGURA_SDK_DIR`, by default the sibling directory `../kagura`, and MicroPython v1.26.0 in `MPY_DIR`, by default the SDK's `build/micropython-src`.
 
 ```python
-from kagura.desktop import Desktop
+from kdesk.desktop import Desktop
 import kagura_desktop as kd
 
 desk = Desktop(menus=(('ファイル', ('開く', '-', '終了')), ('設定', ('画面',))))
@@ -18,22 +35,28 @@ desk.present()
 desk.close()                                     # the HDMI console comes back
 ```
 
-A complete application is `software/micropython/examples/desktop_ja.py`. It has menus, a welcome window, file icons, a dialog and a sprite studio, plus a scripted tour.
+A complete application is `apps/desktop_ja.py`. It has menus, a welcome window, file icons, a dialog and a sprite studio, plus a scripted tour.
 
 ## Layout
 
 | Directory | Contents | Depends on |
 |---|---|---|
 | `core/` | Framebuffer (320x200 4bpp, exact dirty tiles), raster, GEM renderer, window manager, compositor, menus, events, TILE4 export | C11, `<string.h>` |
-| `text/` | `kj_text`: strict UTF-8 decoding, KJ8F glyph lookup and measurement (from PR #71, without Wren); `kj_misaki8`: the repository's Misaki font, embedded unchanged in read-only memory; `kd_edit`: the bounded UTF-8 editing core | C11 |
+| `text/` | `kj_text`: strict UTF-8 decoding, KJ8F glyph lookup and measurement (from siska-tech/kagura#71, without Wren); `kj_misaki8`: the SDK's Misaki font, embedded unchanged in read-only memory; `kd_edit`: the bounded UTF-8 editing core | C11 |
 | `retained/` | `kdm`: retained display lists for script-driven windows, fixed pools, event ring, menus | core |
 | `binding/` | `kagura_desktop`, the MicroPython user C module (handles, errors, sinks) | kdm, MicroPython |
-| `tests/` | C tests (text, editing core with 4 mutants, kdm with 10 mutants) and MicroPython tests (binding, hardware session) | |
-| `tools/` | `test.sh`, `build_unix.sh`, `build_firmware.sh` | |
+| `python/kdesk/` | `kdesk.desktop` (the hardware session), `kdesk.keyinput` (terminal keyboard), `kdesk.skk` (SKK input) | binding, SDK |
+| `apps/` | `desktop_ja`, `desktop_keys`, `desktop_editor` (神楽メモ帳), `desktop_skk`, `desktop_showcase`, `desktop_tracker` (神楽トラッカー) | kdesk, SDK |
+| `firmware/` | `usermods.cmake` and `manifest.py` for the SDK board's firmware build | SDK |
+| `usermods/` | the unix port's module list (kagura_desktop and the SDK's kagura_audio) | SDK |
+| `tests/` | C tests (text, editing core with 4 mutants, kdm with 10 mutants) and MicroPython tests (binding, session, keyboard, editor, SKK, tracker) | |
+| `tools/` | `test.sh`, `build_unix.sh`, `build_firmware.sh`, and the board acceptance tools | |
+| `experiments/c-gem-desktop/` | the original experiment: design, benchmarks, SRAM-only RP2040 and HDMI runs | |
+| `docs/` | hardware acceptance logs, SKK, the tracker | |
 
-The hardware session is `software/micropython/kagura/desktop.py`, frozen into the firmware. It uses the console's SDK device, so the board has one hardware owner and one transport.
+The hardware session is `python/kdesk/desktop.py`, frozen into the firmware. It puts the desktop on a `TilePlane` over the console's SDK device, so the board has one hardware owner and one transport.
 
-The core and the text engine do not depend on MicroPython. Standalone C programs use them directly, as the experiments do: `experiments/c-gem-desktop/pico` runs them from SRAM over the C transport in `software/pico`.
+The core and the text engine do not depend on MicroPython. Standalone C programs use them directly, as the experiments do: `experiments/c-gem-desktop/pico` runs them from SRAM over the SDK's C transport in `software/pico`.
 
 ## Text
 
@@ -89,9 +112,9 @@ while (ev := desk.poll()) is not None:
 - **Ctrl+C stays MicroPython's KeyboardInterrupt.** It is never a clipboard key. `Window.edit(id, kd.EDIT_COPY | EDIT_CUT | EDIT_PASTE | EDIT_SELECT_ALL)` gives menus the same commands. The clipboard, 255 bytes, is shared by all fields (`desk.clipboard()`, `desk.set_clipboard(s)`).
 - **No allocation while typing.** `key`, `text`, `poll_into` and `present` allocate nothing, so typing runs under `heap_lock()`.
 
-`software/micropython/examples/desktop_keys.py` is a keyboard-only tour covering menus, window switching, fields, Japanese text, copy and paste, scrolling and a dialog. It is deterministic and writes no files. On the board it is paced for watching (`key_ms`, `step_ms`). The window says whether the input is scripted (スクリプト) or comes from a keyboard (キーボード).
+`apps/desktop_keys.py` is a keyboard-only tour covering menus, window switching, fields, Japanese text, copy and paste, scrolling and a dialog. It is deterministic and writes no files. On the board it is paced for watching (`key_ms`, `step_ms`). The window says whether the input is scripted (スクリプト) or comes from a keyboard (キーボード).
 
-The font data (`software/micropython/fonts/misaki8.kfnt`, 71,718 B, 7,171 glyphs) is © Num Kadoma and licensed separately; see `text/NOTICE.md` and `software/micropython/fonts/README.md`.
+The font data (the SDK's `software/micropython/fonts/misaki8.kfnt`, 71,718 B, 7,171 glyphs) is © Num Kadoma and licensed separately; see `text/NOTICE.md` and the SDK's `software/micropython/fonts/README.md`.
 
 ## The text editor
 
@@ -110,7 +133,7 @@ The font data (`software/micropython/fonts/misaki8.kfnt`, 71,718 B, 7,171 glyphs
   - a scroll: the whole view.
 - **Python calls:** `w.caret(id)` gives (line, column) in characters. `w.version(id)` changes with every edit, so it tells whether the document was modified since the last save. `w.length(id)` gives the size in bytes.
 
-`software/micropython/examples/desktop_editor.py` (神楽メモ帳) is the application built on it:
+`apps/desktop_editor.py` (神楽メモ帳) is the application built on it:
 
 - **Commands:** 新規, 開く…, 保存, 名前を付けて保存… and 終了 in the menus, with Ctrl+N, Ctrl+O and Ctrl+S as shortcuts. The 編集 menu has cut, copy, paste and select all. The title and status line show the name, line, column, size and whether the document is modified (変更あり).
 - **Unsaved changes:** new, open and quit ask 保存 / 破棄 / 取消 first. Saving under an existing name asks before overwriting.
@@ -137,7 +160,7 @@ The editor's per-keystroke timing on the board needs firmware with the editor.
 
 ## Showcase for video
 
-`software/micropython/examples/desktop_showcase.py` is a paced tour made to be filmed from the HDMI output. It runs about 2 minutes; `main(pace=1.5)` is slower.
+`apps/desktop_showcase.py` is a paced tour made to be filmed from the HDMI output. It runs about 2 minutes; `main(pace=1.5)` is slower.
 
 - **Layout:**
   - One subject at a time, with no cascade of overlapping windows.
@@ -151,7 +174,7 @@ The editor's per-keystroke timing on the board needs firmware with the editor.
 
 ## Keyboard input
 
-`software/micropython/kagura/keyinput.py` connects a keyboard to the desktop in two parts. Either part can be replaced.
+`python/kdesk/keyinput.py` connects a keyboard to the desktop in two parts. Either part can be replaced.
 
 - **`TerminalKeys`** decodes VT/xterm terminal bytes into the desktop's normalized calls: `key(KEY_*, ch, MOD_*)` for keys and `text(buffer)` for UTF-8. It handles printable ASCII, UTF-8, Enter (CRLF counted once), Tab, Backspace, Ctrl+letters, arrows, Home/End, Insert/Delete, F6 and F10, with Shift, Ctrl and Alt from xterm modifier parameters. A lone Escape is reported after 50 ms. Other sequences are consumed and counted. `feed()` allocates nothing. A future USB HID-to-UART bridge (a XIAO RP2040 is planned) needs only to send the same sequences, or to come with its own decoder that makes the same two calls.
 - **`StdinSource`** reads stdin without blocking, at most 64 bytes per `pump()`. On the board, stdin is the console's stream: UART RX through dupterm, plus USB CDC. The console stays the only reader of the UART, and nothing else consumes those bytes.
@@ -160,7 +183,7 @@ The editor's per-keystroke timing on the board needs firmware with the editor.
 - **Ctrl+C is untouched.** It raises KeyboardInterrupt before any of this code sees it, and `kbd_intr` is never changed. An application's `finally: desk.close()` brings the console back.
 - **Clipboard keys.** Ctrl+Insert, Shift+Insert and Shift+Delete arrive as `ESC [2;5~`, `ESC [2;2~` and `ESC [3;2~`. Many terminal programs keep Shift+Insert for their own paste and send the pasted text instead, which then arrives as typing. The 編集 menu offers the same commands either way.
 
-`examples/desktop_keys.py` with `main(script=False)` is the keyboard session, labelled キーボード.
+`apps/desktop_keys.py` with `main(script=False)` is the keyboard session, labelled キーボード.
 
 Measured on the RP2040 from RAM, with firmware 1c9c234 and no flashing (`tools/kagura-keyboard-device.py`, log in `docs/hardware/keyboard-ram-1c9c234.txt`):
 
@@ -198,13 +221,16 @@ These checks cover USB CDC only. The UART RX path and a physical keyboard have n
 
 Design and measurements are in `experiments/c-gem-desktop/micropython/DESIGN.md` and `REPORT.md`.
 
-## Build and test (WSL/Linux, from the repository root)
+## Build and test (WSL/Linux)
 
 ```sh
-bash software/desktop/tools/test.sh            # host C tests, unix MicroPython tests, demo without hardware
-bash software/desktop/tools/build_firmware.sh  # KAGURA_PICO firmware (UF2) with the module
+git clone https://github.com/siska-tech/kagura ../kagura   # or set KAGURA_SDK_DIR
+git clone --depth 1 --branch v1.26.0 https://github.com/micropython/micropython ../kagura/build/micropython-src
+make -C ../kagura/build/micropython-src/mpy-cross
+bash tools/test.sh                         # host C tests, unix MicroPython tests, demos without hardware
+bash tools/build_firmware.sh [KAGURA_PICO_W]  # the SDK board's firmware (UF2) with the desktop
 ```
 
-The KAGURA_PICO and KAGURA_PICO_W boards include the module unless `USER_C_MODULES` is given.
+The firmware build passes the SDK board directory with `USER_C_MODULES=firmware/usermods.cmake` (kagura_desktop and the SDK's kagura_audio) and `FROZEN_MANIFEST=firmware/manifest.py` (the board's manifest, then `kdesk`). The SDK's own boards build without the desktop.
 
-For flashing with checks and rollback, use `tools/rp2040-firmware.py`. `tools/kagura-desktop-device.py` runs the hardware acceptance: host-equal CRCs, VRAM readback, HDMI stills, RP2040 measurements and resets.
+For flashing with checks and rollback, use the SDK's `tools/rp2040-firmware.py`. `tools/kagura-desktop-device.py` runs the hardware acceptance: host-equal CRCs, VRAM readback, HDMI stills, RP2040 measurements and resets.

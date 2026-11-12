@@ -6,7 +6,7 @@ desktops, reused slots), GC safety (no references from C into the heap),
 atomic failures when native pools are full, the present() sinks, events,
 and allocation-free operation under micropython.heap_lock().
 
-  micropython tests/test_binding.py
+  micropython tests/test_binding.py <sdk>/software/micropython/fonts/misaki8.kfnt [NAME]
 """
 import binascii
 import gc
@@ -372,8 +372,9 @@ def test_heap_locked_frame():
 
 
 def glyph_rows(scalar):
-    # The KJ8F file the firmware embeds: header 8 B, then (code, 8 rows) x count.
-    path = __file__.rsplit('/', 3)[0] + '/micropython/fonts/misaki8.kfnt'
+    # The KJ8F file the firmware embeds (the SDK's, given on the command line):
+    # header 8 B, then (code, 8 rows) x count.
+    path = sys.argv[1]
     with open(path, 'rb') as f:
         data = f.read()
     for k in range((len(data) - 8) // 10):
@@ -647,7 +648,7 @@ def main():
     global failed, run
     tests = [(k, v) for k, v in globals().items() if k.startswith('test_')]
     tests.sort()
-    only = sys.argv[1] if len(sys.argv) > 1 else None
+    only = sys.argv[2] if len(sys.argv) > 2 else None   # argv[1] is the font
     for name, fn in tests:
         if only and only not in name:
             continue
@@ -660,7 +661,7 @@ def main():
             print('FAIL %s: %r' % (name[5:], e))
             sys.print_exception(e)
     print('%d tests, %d failed' % (run, failed))
-    sys.exit(1 if failed else 0)
+    sys.exit(1 if failed or not run else 0)
 
 
 main()

@@ -1,17 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests of kagura.keyinput (terminal bytes -> desktop keys) on the unix port.
+"""Tests of kdesk.keyinput (terminal bytes -> desktop keys) on the unix port.
 
 Unit tests against a recording sink, an allocation check, and the keyboard
-loop of examples/desktop_keys.py driven end to end by terminal bytes.
+loop of apps/desktop_keys.py driven end to end by terminal bytes.
 
-  MICROPYPATH=software/micropython micropython tests/test_keyinput.py
+  MICROPYPATH=<sdk>/software/micropython:python:apps micropython tests/test_keyinput.py
 """
 import gc
 import micropython
 import sys
 
 import kagura_desktop as kd
-from kagura.keyinput import StdinSource, TerminalKeys
+from kdesk.keyinput import StdinSource, TerminalKeys
 
 failed = 0
 run = 0
@@ -176,7 +176,7 @@ class Bytes:
 
 
 def test_desktop_keys_end_to_end():
-    sys.path.append(sys.path[0] + '/../../micropython/examples')
+    sys.path.append(sys.path[0] + '/../apps')
     import desktop_keys as dk
     desk = dk.HostDesktop(dk.MENUS)
     app = dk.App(desk, 'keyboard')

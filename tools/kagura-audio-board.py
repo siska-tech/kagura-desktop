@@ -44,6 +44,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'sdk'))
+import kagura_sdk  # noqa: E402  (the SDK's layout: songs, audio tools)
 spec = importlib.util.spec_from_file_location('kbd', ROOT / 'tools/kagura-keyboard-device.py')
 kbd = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(kbd)
@@ -51,12 +53,12 @@ AUDIO_DEVICE = r'@device_cm_{33D9A762-90C8-11D0-BD43-00A0C911CE86}\wave_{50C95F8
 
 
 def example(name):
-    src = (ROOT / 'software/micropython/examples' / name).read_text(encoding='utf8')
+    src = (ROOT / 'apps' / name).read_text(encoding='utf8')
     return src.split("\nif __name__ == '__main__':")[0] + '\n'
 
 
 def song(name):
-    return (ROOT / 'software/audio/songs' / name).read_bytes().hex()
+    return (kagura_sdk.SONGS / name).read_bytes().hex()
 
 
 COMMON = r'''
@@ -143,7 +145,7 @@ for voices, pitch in ((1, False), (6, False), (6, True)):
         (voices, pitch, s['pairs'] // max(1, s['frames'])) + pct(t)))
 ka.silence()
 audio.send()
-from kagura.desktop import Desktop
+from kdesk.desktop import Desktop
 import kagura_desktop as kd
 desk = Desktop(menus=(('ファイル', ('終了',)),), cursor=False)
 desk.audio = audio
@@ -280,7 +282,7 @@ print('HEAP end', gc.mem_free())
 '''
 
 SOAK = r'''
-from kagura.desktop import Desktop
+from kdesk.desktop import Desktop
 gc.collect()
 audio = AudioSession(d)
 desk = Desktop(menus=(('ファイル', ('終了',)),), cursor=False)
@@ -392,7 +394,7 @@ def run(b, log, source, timeout=60.0):
 
 WAVE = r"""
 import kagura_desktop as kd
-from kagura.desktop import Desktop
+from kdesk.desktop import Desktop
 desk = Desktop(menus=DT.MENUS, cursor=False)
 audio = DT.AudioSession(d)
 desk.audio = audio
@@ -455,7 +457,7 @@ audio.close()
 
 
 SCOPE = r"""
-from kagura.desktop import Desktop
+from kdesk.desktop import Desktop
 desk = Desktop(menus=DT.MENUS, cursor=False)
 audio = DT.AudioSession(d)
 desk.audio = audio
@@ -598,13 +600,13 @@ def main():
         b.close()
     if args.wav and args.phase == 'wave':
         logf.flush()
-        r = subprocess.run([sys.executable, '-I', str(ROOT / 'tools/kagura-audio-wave.py'), str(args.wav),
+        r = subprocess.run([sys.executable, '-I', str(kagura_sdk.TOOLS / 'kagura-audio-wave.py'), str(args.wav),
                             str(args.out)], capture_output=True, text=True)
         for line in r.stdout.splitlines():
             log(line)
     elif args.wav:
         bpm = '150' if args.phase in ('bench', 'scope') else '140'
-        r = subprocess.run([sys.executable, '-I', str(ROOT / 'tools/kagura-audio-timing.py'), str(args.wav),
+        r = subprocess.run([sys.executable, '-I', str(kagura_sdk.TOOLS / 'kagura-audio-timing.py'), str(args.wav),
                             '--bpm', bpm, '--min-onsets', '50'], capture_output=True, text=True)
         for line in r.stdout.splitlines():
             log(line)

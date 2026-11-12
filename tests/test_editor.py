@@ -1,20 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests of examples/desktop_editor.py (神楽メモ帳) on the unix port.
+"""Tests of apps/desktop_editor.py (神楽メモ帳) on the unix port.
 
 Files go to a fresh folder under /tmp. Covers the editor binding, the
 Documents layer (names, round trips, CRLF/BOM, rejections, failed saves),
 the unsaved-change flows, and a keyboard session from terminal bytes.
 
-  MICROPYPATH=software/micropython micropython tests/test_editor.py
+  MICROPYPATH=<sdk>/software/micropython:python:apps micropython tests/test_editor.py
 """
 import os
 import sys
 
 import kagura_desktop as kd
 
-sys.path.append(sys.path[0] + '/../../micropython/examples')
+sys.path.append(sys.path[0] + '/../apps')
 import desktop_editor as de                                  # noqa: E402
-from kagura.keyinput import StdinSource, TerminalKeys        # noqa: E402
+from kdesk.keyinput import StdinSource, TerminalKeys        # noqa: E402
 
 failed = 0
 run = 0
@@ -259,8 +259,8 @@ def test_skk_in_the_editor():
 
 
 def test_skk_dialog_and_menus():
-    from kagura import skk
-    from kagura.keyinput import TerminalKeys
+    from kdesk import skk
+    from kdesk.keyinput import TerminalKeys
     docs = fresh('skkdlg')
     a = de.Editor(de.HostDesktop(de.MENUS), docs, ime=skk.SkkEngine(skk.test_dictionary(), style=skk.MODERN))
     keys = de.input_chain(a)

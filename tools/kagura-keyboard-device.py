@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Keyboard input path on the RP2040, from RAM (no flashing, no file writes).
 
-Runs software/micropython/kagura/keyinput.py on the board through the raw
+Runs python/kdesk/keyinput.py on the board through the raw
 REPL and drives it with real bytes over USB CDC, the same stdin a terminal
 uses. Checks, in order:
   probe    firmware features (kagura_desktop text()/fields?), free heap, console
@@ -25,7 +25,9 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'experiments/c-gem-desktop/tools'))
+sys.path.insert(0, str(ROOT / 'sdk'))
+import kagura_sdk  # noqa: E402  (the SDK's layout)
+sys.path.insert(0, str(kagura_sdk.TOOLS))   # rp2040_sram_bench: the SDK's device helpers
 import rp2040_sram_bench as dev  # noqa: E402
 
 # kagura_desktop key codes (core/kd_app.h); the board's firmware may predate
@@ -47,7 +49,7 @@ if not hasattr(kd, 'KEY_INSERT'):
 
 
 def keyinput_source():
-    src = (ROOT / 'software/micropython/kagura/keyinput.py').read_text(encoding='utf8')
+    src = (ROOT / 'python/kdesk/keyinput.py').read_text(encoding='utf8')
     return SHIM + src.replace('import kagura_desktop as kd\n', '')
 
 

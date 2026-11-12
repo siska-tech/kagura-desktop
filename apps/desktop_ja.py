@@ -2,7 +2,7 @@
 """神楽デスクトップ: a Japanese GEM-style desktop driven from MicroPython.
 
 The windows, menus, compositor and Japanese text are the native desktop
-(kagura_desktop, software/desktop); this file is only the application:
+(kagura_desktop, this repository); this file is only the application:
 what windows exist, what they show, and how it reacts to events.
 
 On KAGURA-9 (the HDMI console running, firmware with kagura_desktop):
@@ -212,7 +212,7 @@ def tour(app, step):
 def main(script=True, desk=None, out=print, dump=None):
     own = desk is None
     if own:
-        from kagura.desktop import Desktop
+        from kdesk.desktop import Desktop
         desk = Desktop(menus=MENUS)
     app = App(desk)
     scenes = [0]

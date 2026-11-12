@@ -1,9 +1,9 @@
 # SKK Japanese input (Phase 5)
 
-神楽メモ帳 accepts Japanese through an SKK-style input method. It works with every keyboard path the desktop has: terminal bytes over USB CDC or UART, decoded by `kagura.keyinput`. A future USB HID bridge only needs to produce the same key calls.
+神楽メモ帳 accepts Japanese through an SKK-style input method. It works with every keyboard path the desktop has: terminal bytes over USB CDC or UART, decoded by `kdesk.keyinput`. A future USB HID bridge only needs to produce the same key calls.
 
 ```python
-from kagura import skk
+from kdesk import skk
 app = desktop_editor.Editor(desk, docs, ime=skk.SkkEngine(skk.test_dictionary(), style=skk.MODERN))
 desktop_editor.keyboard(app)        # SkkInput sits between the decoder and the desktop
 ```
@@ -12,9 +12,9 @@ desktop_editor.keyboard(app)        # SkkInput sits between the decoder and the 
 
 | part | where | role |
 |---|---|---|
-| `SkkEngine` | `kagura/skk.py` (MicroPython, frozen) | the state machine (normal, ▽ reading, ▼ conversion), romaji, okurigana, candidates; independent of the desktop |
-| `SkkDict` / `SortedFileDict` | `kagura/skk.py` | the dictionary in memory, or binary-searched in a sorted file |
-| `SkkInput` | `kagura/skk.py` | the sink of `TerminalKeys`; passes on every key the IME does not use |
+| `SkkEngine` | `kdesk/skk.py` (MicroPython, frozen) | the state machine (normal, ▽ reading, ▼ conversion), romaji, okurigana, candidates; independent of the desktop |
+| `SkkDict` / `SortedFileDict` | `kdesk/skk.py` | the dictionary in memory, or binary-searched in a sorted file |
+| `SkkInput` | `kdesk/skk.py` | the sink of `TerminalKeys`; passes on every key the IME does not use |
 | preedit | native, `kdm_set_preedit` | drawn at the caret of the focused field or editor; never part of the document |
 | candidate popup | native, `kdm_set_candidates` | up to 5 candidates in a floating popup under the preedit, the selection inverted, a page number or message at its foot |
 | mode indicator | native, `kdm_set_status` | at the right end of the menu bar: `A 直接`, `あ かな`, `ア カナ`, `▽ 読み`, `▼ 変換` |

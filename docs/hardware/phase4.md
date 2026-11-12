@@ -107,7 +107,7 @@ python tools/kagura-editor-board.py showcase --reset --video showcase.mp4 --ffmp
 ```
 
 - `--reset` soft-resets the board first, for a clean heap and console.
-- Showcase CRCs are compared with `micropython examples/desktop_showcase.py --host DIR` (run by `tools/test.sh`).
+- Showcase CRCs are compared with `micropython apps/desktop_showcase.py --host DIR` (run by `tools/test.sh`).
 
 ## Phase 4 acceptance criteria
 

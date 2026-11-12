@@ -7,8 +7,9 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-# The core lives in the shared native library (software/desktop/core).
-set(KD_CORE ${CMAKE_CURRENT_SOURCE_DIR}/../../software/desktop/core)
+# The core lives in the shared native library (core/ at the repository root).
+set(KD_CORE ${CMAKE_CURRENT_SOURCE_DIR}/../../core)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../sdk/kagura_sdk.cmake)   # the KAGURA SDK
 
 option(KD_SDL "Build the interactive SDL2 host" ON)
 option(KD_MUTATION_TESTS "Build fault-injected test variants that must fail" ON)
@@ -37,12 +38,12 @@ kd_variant(0 "")
 
 # The existing C TileFramebuffer raster (software/pico/tile_fb.c, unchanged)
 # serves as an independent reader of the exported TILE4 patterns.
-set(KD_PICO ${CMAKE_CURRENT_SOURCE_DIR}/../../software/pico)
+set(KD_PICO ${KAGURA_SDK_PICO})
 set(KD_TEST_SOURCES tests/test_main.c tests/test_raster.c tests/test_desktop.c)
 if(EXISTS ${KD_PICO}/tile_fb.c)
     list(APPEND KD_TEST_SOURCES ${KD_PICO}/tile_fb.c)
     set(KD_TEST_DEFS KD_HAVE_TILE_FB=1)
-    set(KD_TEST_INCLUDES ${KD_PICO} ${CMAKE_CURRENT_SOURCE_DIR}/../../software/include)
+    set(KD_TEST_INCLUDES ${KD_PICO} ${KAGURA_SDK_INCLUDE})
 endif()
 
 function(kd_tests suffix)

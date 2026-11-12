@@ -7,13 +7,14 @@
 cmake_minimum_required(VERSION 3.13)
 set(PICO_BOARD pico)
 set(PICO_DEFAULT_BINARY_TYPE no_flash)
-include(${CMAKE_CURRENT_LIST_DIR}/../../../software/pico/pico_sdk_import.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../../sdk/kagura_sdk.cmake)   # the KAGURA SDK
+include(${KAGURA_SDK_PICO}/pico_sdk_import.cmake)
 project(kd_rp2040_bench C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 pico_sdk_init()
 
 set(KD ${CMAKE_CURRENT_LIST_DIR}/..)
-set(KD_CORE ${KD}/../../software/desktop/core)
+set(KD_CORE ${KD}/../../core)
 set(KD_SOURCES
     ${KD_CORE}/kd_fb.c ${KD_CORE}/kd_region.c ${KD_CORE}/kd_tile4.c ${KD_CORE}/kd_font.c
     ${KD_CORE}/kd_font_data.c ${KD_CORE}/kd_sprite.c ${KD_CORE}/kd_gfx.c ${KD_CORE}/kd_app.c
@@ -42,12 +43,12 @@ endfunction()
 # Stage 2: the same core driving the KAGURA-9 display through the repository's
 # validated C transport (software/pico kagura_host.c, tile_fb.c, tile_fb_io.c,
 # all unchanged), still a no_flash SRAM-only program.
-set(KD_PICO_HOST ${CMAKE_CURRENT_LIST_DIR}/../../../software/pico)
+set(KD_PICO_HOST ${KAGURA_SDK_PICO})
 add_executable(kd_rp2040_hdmi hdmi_main.c ${KD_SOURCES}
     ${KD_PICO_HOST}/kagura_host.c ${KD_PICO_HOST}/tile_fb.c ${KD_PICO_HOST}/tile_fb_io.c)
 pico_generate_pio_header(kd_rp2040_hdmi ${KD_PICO_HOST}/kagura_host.pio)
 target_include_directories(kd_rp2040_hdmi PRIVATE ${KD_CORE} ${KD}/apps ${KD}/bench
-    ${KD_PICO_HOST} ${CMAKE_CURRENT_LIST_DIR}/../../../software/include)
+    ${KD_PICO_HOST} ${KAGURA_SDK_INCLUDE})
 target_compile_options(kd_rp2040_hdmi PRIVATE -Wall -Wextra -Werror -O2 -fstack-usage)
 target_compile_definitions(kd_rp2040_hdmi PRIVATE
     PICO_STACK_SIZE=0x1000

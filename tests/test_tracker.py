@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-# 神楽トラッカー (examples/desktop_tracker.py) on the unix port: editing keys,
+# 神楽トラッカー (apps/desktop_tracker.py) on the unix port: editing keys,
 # the composed demo song, files, guards and playback, without hardware.
-#   MICROPYPATH=software/micropython:software/micropython/examples micropython test_tracker.py DIR
+#   MICROPYPATH=<sdk>/software/micropython:python:apps micropython tests/test_tracker.py DIR
 import os
 import sys
 

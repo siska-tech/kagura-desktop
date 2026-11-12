@@ -1,0 +1,73 @@
+name: kagura-desktop
+# Tests and firmware against the KAGURA SDK (siska-tech/kagura). KAGURA_SDK_REF
+# names the SDK commit, tag or branch the desktop is tested with.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 18 * * 0' # Monday 03:00 JST
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+env:
+  KAGURA_SDK_REF: main
+  KAGURA_SDK_DIR: ${{ github.workspace }}/kagura
+  MPY_DIR: ${{ github.workspace }}/kagura/build/micropython-src
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: kagura-desktop
+      - uses: actions/checkout@v4
+        with:
+          repository: siska-tech/kagura
+          ref: ${{ env.KAGURA_SDK_REF }}
+          path: kagura
+      - name: Fetch pinned MicroPython
+        run: |
+          git clone --depth 1 --branch v1.26.0 https://github.com/micropython/micropython.git "$MPY_DIR"
+          test "$(git -C "$MPY_DIR" rev-parse HEAD)" = 4ce2dd2cdab6e57f3982fc899f15a2103d71b0be
+          make -C "$MPY_DIR/mpy-cross" -j4
+      - name: Native library, binding, session, keyboard, editor, SKK, tracker and demos
+        run: bash kagura-desktop/tools/test.sh
+      - name: Check MicroPython bytecode compilation
+        run: |
+          mkdir -p build/mpy
+          for file in kagura-desktop/python/kdesk/*.py kagura-desktop/apps/*.py; do
+            "$MPY_DIR/mpy-cross/build/mpy-cross" -march=armv6m -o "build/mpy/$(basename "$file").mpy" "$file"
+          done
+  firmware:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        board: [KAGURA_PICO, KAGURA_PICO_W]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: kagura-desktop
+      - uses: actions/checkout@v4
+        with:
+          repository: siska-tech/kagura
+          ref: ${{ env.KAGURA_SDK_REF }}
+          path: kagura
+      - name: Install toolchain and pinned MicroPython
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi cmake
+          git clone --depth 1 --branch v1.26.0 https://github.com/micropython/micropython.git "$MPY_DIR"
+          test "$(git -C "$MPY_DIR" rev-parse HEAD)" = 4ce2dd2cdab6e57f3982fc899f15a2103d71b0be
+          make -C "$MPY_DIR/ports/rp2" BOARD=${{ matrix.board }} \
+            BOARD_DIR="$KAGURA_SDK_DIR/software/micropython/boards/${{ matrix.board }}" submodules
+          make -C "$MPY_DIR/mpy-cross" -j4
+      - name: Build the SDK board with the desktop
+        run: ARM_GCC_BIN=/usr/bin bash kagura-desktop/tools/build_firmware.sh ${{ matrix.board }} build-${{ matrix.board }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kagura-desktop-${{ matrix.board }}
+          path: kagura/build/micropython-src/ports/rp2/build-${{ matrix.board }}/firmware.uf2

@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Tests of kagura.skk (SKK input) on the unix port, without the desktop.
+"""Tests of kdesk.skk (SKK input) on the unix port, without the desktop.
 
 A tiny editor model receives what the engine commits and the keys it passes
 on, so each test states the document the user would see.
 
-  MICROPYPATH=software/micropython micropython tests/test_skk.py
+  MICROPYPATH=<sdk>/software/micropython:python:apps micropython tests/test_skk.py
 """
 import sys
 
-from kagura import skk
+from kdesk import skk
 
 failed = 0
 run = 0

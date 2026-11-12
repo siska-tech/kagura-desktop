@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""The editor's file layer (examples/desktop_editor.py Documents) on the RP2040,
+"""The editor's file layer (apps/desktop_editor.py Documents) on the RP2040,
 from RAM: a littlefs in a RAM block device (ram_docs), so nothing reaches
 flash. Checks CRLF/BOM round trips, overwrite by rename (littlefs replaces
 the target), refusal when space is short (old file kept, no .tmp left),
@@ -30,7 +30,7 @@ for _n, _v in (('EDIT_COPY', 0), ('EDIT_CUT', 1), ('EDIT_PASTE', 2), ('EDIT_SELE
     if not hasattr(kd, _n):
         setattr(kd, _n, _v)
 '''
-src = (ROOT / 'software/micropython/examples/desktop_editor.py').read_text(encoding='utf8')
+src = (ROOT / 'apps/desktop_editor.py').read_text(encoding='utf8')
 src = src.replace('import kagura_desktop as kd\n', '').split("\nif __name__ == '__main__':")[0]
 
 TEST = r'''

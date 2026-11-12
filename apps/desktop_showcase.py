@@ -227,7 +227,7 @@ def chapters(s):
 def main(desk=None, docs=None, out=print, pace=1.0, dump=None, music=False):
     own = desk is None
     if own:
-        from kagura.desktop import Desktop
+        from kdesk.desktop import Desktop
         desk = Desktop(menus=MENUS, cursor=False)
         if docs is None:
             docs = de.ram_docs(blocks=32)                # 16 KB in RAM: never flash

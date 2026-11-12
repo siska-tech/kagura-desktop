@@ -17,7 +17,7 @@ extern const kd_font kd_font_small;    // 4x8, Misaki half-width forms
 // Draws text starting at (x,y); bg KD_NO_KEY leaves background pixels alone.
 // Returns the x after the last glyph. Newlines are not interpreted.
 // Text is ASCII; bytes outside 0x20..0x7E draw '?'. Built with KD_UTF8=1 (and
-// the native text engine, software/desktop/text), text is UTF-8: every
+// the native text engine, text/), text is UTF-8: every
 // non-ASCII character is one 8x8 Misaki glyph, whichever font is given.
 int kd_text(kd_fb *fb, const kd_font *f, int x, int y, const char *s, uint8_t fg, int bg);
 int kd_text_n(kd_fb *fb, const kd_font *f, int x, int y, const char *s, int n,

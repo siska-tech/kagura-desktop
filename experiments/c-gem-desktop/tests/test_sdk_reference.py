@@ -19,7 +19,9 @@ HERE = Path(__file__).resolve().parent
 EXP = HERE.parent
 ROOT = EXP.parents[1]
 sys.dont_write_bytecode = True
-sys.path[:0] = [str(ROOT / 'software/micropython/tests'), str(ROOT / 'software/micropython')]
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'sdk'))
+import kagura_sdk  # noqa: E402  (the SDK's layout)
+sys.path[:0] = [str(kagura_sdk.PYTHON / 'tests'), str(kagura_sdk.PYTHON)]
 from test_framebuffer import decode  # noqa: E402
 from kagura.ui.canvas import Sprite4  # noqa: E402
 

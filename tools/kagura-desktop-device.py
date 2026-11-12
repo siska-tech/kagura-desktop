@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Hardware acceptance of the native desktop firmware on KAGURA-9.
 
-Runs software/micropython/examples/desktop_ja.py on the board from the raw
-REPL (code in RAM, no filesystem writes) through kagura.desktop, the
+Runs apps/desktop_ja.py on the board from the raw
+REPL (code in RAM, no filesystem writes) through kdesk.desktop, the
 firmware's frozen hardware session, and checks every scene three ways:
   * framebuffer CRC32 equal to the host run (unix port, same native code);
   * the patterns read back from the FPGA have the CRC32 of the host run's
@@ -24,7 +24,9 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'experiments/c-gem-desktop/tools'))
+sys.path.insert(0, str(ROOT / 'sdk'))
+import kagura_sdk  # noqa: E402  (the SDK's layout)
+sys.path.insert(0, str(kagura_sdk.TOOLS))   # rp2040_sram_bench: the SDK's device helpers
 import rp2040_sram_bench as dev  # noqa: E402
 
 DEVICE = 'video=UGREEN 15390'
@@ -33,8 +35,7 @@ INPUT = ['-hide_banner', '-loglevel', 'error', '-rtbufsize', '512M', '-f', 'dsho
 
 DRIVER = r'''
 import time, gc, binascii
-from kagura.desktop import Desktop
-from kagura import regs as _R
+from kdesk.desktop import Desktop
 gc.collect()
 _h0 = gc.mem_free()
 desk = Desktop(menus=MENUS)
@@ -43,7 +44,7 @@ print('HEAP before', _h0, 'after_desktop', gc.mem_free(), 'alloc', gc.mem_alloc(
 app = App(desk)
 gc.collect()
 print('HEAP after_app', gc.mem_free())
-_c = bytearray(1000)   # VRAM readback in chunks: no 32 KB heap block needed
+_c = bytearray(800)    # VRAM readback, 25 patterns at a time: no 32 KB heap block needed
 _n = [0]
 def step(name):
     _n[0] += 1
@@ -51,11 +52,11 @@ def step(name):
     tiles = desk.present()
     dt = time.ticks_diff(time.ticks_us(), t0)
     vcrc = 0
-    for off in range(0, 32000, 1000):
-        desk.device.read_memory_into(off, _c)
+    for first in range(0, 1000, 25):
+        desk.plane.read(first, _c)
         vcrc = binascii.crc32(_c, vcrc)
     print('SCENE %d %s %08x %d %d %08x %d %d' % (_n[0], name, desk.crc(), tiles, dt, vcrc,
-          desk.device.read_reg(_R.REG_ERROR_CODE), gc.mem_free()))
+          desk.plane.error_code(), gc.mem_free()))
     time.sleep_ms(%(hold)d)
 tour(app, step)
 
@@ -123,7 +124,7 @@ while time.ticks_diff(end, time.ticks_ms()) > 0:
     n += 1
     if n %% 200 == 0:
         desk.invalidate(0, 0, 320, 200)
-        ok = desk.present() == 0 and desk.device.read_reg(_R.REG_ERROR_CODE) == 0
+        ok = desk.present() == 0 and desk.plane.error_code() == 0
         checks += 1
         bad += not ok
         gc.collect()
@@ -132,7 +133,7 @@ while time.ticks_diff(end, time.ticks_ms()) > 0:
             print('SOAK progress %d updates, %d failed, free %d' % (n, bad, gc.mem_free()))
 print('SOAK %d updates, %d checks, %d failed, lowest free heap %d B' % (n, checks, bad, lo))
 desk.invalidate(0, 0, 320, 200)
-print('CONSISTENT', desk.present() == 0, 'error_code', desk.device.read_reg(_R.REG_ERROR_CODE))
+print('CONSISTENT', desk.present() == 0, 'error_code', desk.plane.error_code())
 print('STATS', desk.stats())
 desk.close()
 print('CLOSED console paused', kagura_console.paused, 'last_error', kagura_console.last_error)
@@ -216,7 +217,7 @@ def main():
             f = line.split()
             capture(args.ffmpeg, stills / ('%02d-%s.png' % (int(f[1]), f[2])))
 
-    demo = (ROOT / 'software/micropython/examples/desktop_ja.py').read_text(encoding='utf8')
+    demo = (ROOT / 'apps/desktop_ja.py').read_text(encoding='utf8')
     demo = demo.split("\nif __name__ == '__main__':")[0]
     source = demo + (DRIVER.replace('%(hold)d', str(args.hold)).replace('%(loops)d', str(args.loops))
                      .replace('%(soak)d', str(args.soak)).replace('%%', '%'))

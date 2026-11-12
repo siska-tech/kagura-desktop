@@ -18,7 +18,7 @@ for raw,line in zip(samples,out):
         except UnicodeDecodeError:continue
         if len(s)==1:want=(1,n,ord(s));break
     valid,used,cp=line.split();assert (int(valid),int(used),int(cp,16))==want,(raw,line,want)
-source=Path(__file__).resolve().parents[3]/'software/micropython/fonts/misaki8.kfnt'
+source=Path(sys.argv[2])  # the SDK's software/micropython/fonts/misaki8.kfnt
 data=source.read_bytes(); count=struct.unpack_from('<H',data,6)[0]
 glyphs=subprocess.run([exe,'glyphs'],capture_output=True,text=True,check=True).stdout.splitlines()
 assert len(glyphs)==count==7171

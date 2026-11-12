@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # kagura_desktop user C module for CMake ports (rp2). The KAGURA_PICO board
 # adds it by default (boards/KAGURA_PICO/mpconfigboard.cmake); elsewhere:
-#   make -C ports/rp2 USER_C_MODULES=<repo>/software/desktop/binding/micropython.cmake
+#   make -C ports/rp2 USER_C_MODULES=<repo>/binding/micropython.cmake
+# (firmware/usermods.cmake adds the SDK's kagura_audio as well). The font comes
+# from the KAGURA SDK: $KAGURA_SDK_DIR, else a sibling checkout ../kagura.
 add_library(usermod_kagura_desktop INTERFACE)
 
 set(KD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
+include(${KD_ROOT}/sdk/kagura_sdk.cmake)
 target_sources(usermod_kagura_desktop INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/modkagura_desktop.c
     ${KD_ROOT}/retained/kdm.c
@@ -22,7 +25,7 @@ target_sources(usermod_kagura_desktop INTERFACE
     ${KD_ROOT}/core/kd_desktop.c
 )
 target_include_directories(usermod_kagura_desktop INTERFACE ${KD_ROOT}/retained ${KD_ROOT}/core ${KD_ROOT}/text)
-# UTF-8 text with the Misaki font embedded from the repository (text/kj_misaki8.c).
+# UTF-8 text with the SDK's Misaki font embedded (text/kj_misaki8.c).
 target_compile_definitions(usermod_kagura_desktop INTERFACE KD_UTF8=1
-    KJ_MISAKI8_PATH="${KD_ROOT}/../micropython/fonts/misaki8.kfnt")
+    KJ_MISAKI8_PATH="${KAGURA_SDK_FONT}")
 target_link_libraries(usermod INTERFACE usermod_kagura_desktop)

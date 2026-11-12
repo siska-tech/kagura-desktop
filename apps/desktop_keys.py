@@ -15,7 +15,7 @@ On a PC (unix port with kagura_desktop), without hardware:
 
 The window says where the input comes from: スクリプト for the tour,
 キーボード for a real keyboard (a terminal on USB or the console UART; see
-kagura/keyinput.py). ファイル > 終了 ends the keyboard session; Ctrl+C
+kdesk/keyinput.py). ファイル > 終了 ends the keyboard session; Ctrl+C
 interrupts it, and the console comes back either way.
 
 Keys: F10 menus (arrows, Enter, Esc), F6 next window, Ctrl+W close, Tab and
@@ -218,7 +218,7 @@ def tour(drv):
 
 def keyboard(app, step, source=None, idle_ms=5):
     """Real keyboard: terminal bytes from stdin until ファイル > 終了."""
-    from kagura.keyinput import StdinSource, TerminalKeys
+    from kdesk.keyinput import StdinSource, TerminalKeys
     keys = TerminalKeys(app.desk)
     src = source if source is not None else StdinSource()
     step('keyboard')
@@ -244,7 +244,7 @@ def keyboard(app, step, source=None, idle_ms=5):
 def main(script=True, desk=None, out=print, key_ms=None, step_ms=None, source=None, dump=None):
     own = desk is None
     if own:
-        from kagura.desktop import Desktop
+        from kdesk.desktop import Desktop
         desk = Desktop(menus=MENUS, cursor=False)   # keyboard only: no pointer
     # On the board the tour is paced to be watchable; the host runs at full speed.
     if key_ms is None:

@@ -86,7 +86,7 @@ ELF layout, `kd_rp2040_bench` (the plain variant differs by a few hundred bytes)
 - **Stack:** the largest frames are `kd_desktop_render` 896 B, `damage_from` 472 B, `menu_hook` 288 B, `kd_filemgr_open` 280 B and `main` 224 B.
   The deepest chains add up to about 2.3 KB, including an interrupt frame (**estimate**), against 4 KB. The device measures the real peak.
 
-UF2 (`tools/rp2040_sram_bench.py verify-uf2`), against the datasheet's rules for RAM-only binaries (RP2040 datasheet 2.8.4.2):
+UF2 (the KAGURA SDK's `tools/rp2040_sram_bench.py verify-uf2`), against the datasheet's rules for RAM-only binaries (RP2040 datasheet 2.8.4.2):
 - 259 blocks, all with valid magic, flags = familyID-present only (no `NOT_MAIN_FLASH`), family `0xE48BFF56` and 256-byte payloads, numbered 0..258 with no gaps or duplicates;
 - every target inside main SRAM `0x20000000–0x20042000`, the first block at `0x20000000`; the boot ROM decides "RAM binary" from the first block;
 - no block in flash or in the XIP cache alias;
@@ -124,12 +124,12 @@ The Pico must be the only Raspberry Pi USB device attached. The tool refuses oth
 $py = "$env:APPDATA\uv\python\cpython-3.14.7-windows-x86_64-none\python.exe"
 $env:PYTHONPATH = "build\transport-analysis\python-deps"
 # verified read-only full-flash backup into a new directory; prints its SHA-256
-& $py experiments/c-gem-desktop/tools/rp2040_sram_bench.py backup --dir build/c-gem-rp2040
-& $py experiments/c-gem-desktop/tools/rp2040_sram_bench.py run --approved --expected-flash <backup sha256> `
+& $py $env:KAGURA_SDK_DIR/tools/rp2040_sram_bench.py backup --dir build/c-gem-rp2040
+& $py $env:KAGURA_SDK_DIR/tools/rp2040_sram_bench.py run --approved --expected-flash <backup sha256> `
     --uf2 build/c-gem-rp2040/kd_rp2040_bench.uf2 --elf build/c-gem-rp2040/kd_rp2040_bench.elf `
     --log build/c-gem-rp2040/device-sdk.txt
 # second run with the _plain variant, log device-plain.txt
-& $py experiments/c-gem-desktop/tools/rp2040_sram_bench.py summarize build/c-gem-rp2040/device-sdk.txt `
+& $py $env:KAGURA_SDK_DIR/tools/rp2040_sram_bench.py summarize build/c-gem-rp2040/device-sdk.txt `
     --crc build/c-gem-rp2040/pc-crc.txt --counts build/c-gem-arm/report.md
 ```
 

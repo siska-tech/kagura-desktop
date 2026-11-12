@@ -4,7 +4,7 @@
 SkkEngine is the input method, independent of the desktop: it takes typed
 characters and a few named keys, and produces committed text, a preedit
 (with ▽ or ▼ marker) and a candidate list. SkkInput connects it to a
-kagura_desktop.Desktop as the sink of kagura.keyinput.TerminalKeys: keys the
+kagura_desktop.Desktop as the sink of kdesk.keyinput.TerminalKeys: keys the
 IME does not use go on to the desktop unchanged, committed text enters the
 focused field or editor through Desktop.text, and the preedit is drawn by
 the native control at its caret (Window.set_preedit), never stored in the

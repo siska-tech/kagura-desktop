@@ -9,6 +9,7 @@
 #   bash experiments/c-gem-desktop/micropython/tools/run_bench.sh [OUT_DIR]
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
+. "$ROOT/sdk/paths.sh"
 EXP="$ROOT/experiments/c-gem-desktop/micropython"
 OUT="${1:-$ROOT/build/c-gem-mp/bench}"
 MP="$ROOT/build/micropython-src/ports/unix/build-kagura-desktop/micropython"
@@ -16,7 +17,7 @@ mkdir -p "$OUT"
 for run in 1 2 3; do
     "$ROOT/build/c-gem-mp/kdm_bench" > "$OUT/native-$run.md"
     "$MP" "$EXP/bench/bench_binding.py" > "$OUT/binding-$run.md"
-    (cd "$ROOT" && MICROPYPATH=software/micropython:software/micropython/examples \
+    (cd "$ROOT" && MICROPYPATH="$SDK_PYTHON:$ROOT/apps" \
         "$MP" experiments/c-gem-desktop/bench/kagura_ui_reference.py --backend framebuf --samples 101 \
         > "$OUT/kagura-ui-$run.md")
 done
