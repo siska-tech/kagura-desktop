@@ -5,6 +5,18 @@ It grew out of `experiments/c-gem-desktop` (siska-tech/kagura#68: design, tests,
 
 This repository was split from [the KAGURA SDK](https://github.com/siska-tech/kagura) (siska-tech/kagura) with its history; earlier pull requests are referenced as `siska-tech/kagura#N`.
 
+## Validation status
+
+The split into this repository (2026-11-12) was verified in software only: the host C tests, the unix-port MicroPython tests (binding, session, keyboard, editor, SKK, tracker and its `demo.ksn` fixture), the demos' host runs, and firmware builds for KAGURA_PICO and KAGURA_PICO_W. **Pending hardware validation**, not yet run on an RP2040 with KAGURA-9:
+
+- TilePlane transfer overhead and performance: `kdesk.desktop` now sends runs through `TilePlane.write()`, which checks each run before the accelerated link's write and FENCE (a few µs per run, expected against about 1.1 ms of transfer).
+- HDMI rendering and VRAM readback through `TilePlane.read()` (`tools/kagura-desktop-device.py`).
+- Desktop, editor and SKK functionality on the board (`tools/kagura-keyboard-device.py`, `tools/kagura-editor-board.py`).
+- 神楽トラッカー on the board (`tools/kagura-audio-board.py`).
+- Firmware integration on the RP2040: the UF2 from `tools/build_firmware.sh` (SDK board + `kagura_desktop` + frozen `kdesk`) has not been flashed.
+
+The hardware logs in `docs/hardware/` were recorded before the split, with firmware built from siska-tech/kagura (modules `kagura.desktop`, `kagura.keyinput`, `kagura.skk`). They remain the reference results for that firmware and do not validate this repository's builds. The board tools now load `kdesk`, so they need firmware built from this repository.
+
 ## The KAGURA SDK
 
 The desktop is an application of the SDK. It uses only the SDK's public interfaces and never the FPGA's registers, VRAM layout or RTL:
