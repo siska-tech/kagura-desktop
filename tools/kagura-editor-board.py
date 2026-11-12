@@ -316,7 +316,7 @@ def main():
     p.add_argument('--seconds', type=int, default=300, help='skk-soak duration')
     p.add_argument('--pace', type=float, default=1.0, help='showcase pacing (1.0: about 2 minutes)')
     p.add_argument('--reset', action='store_true', help='soft reset first: a clean heap and console')
-    p.add_argument('--music', action='store_true', help='showcase with PSG background music')
+    p.add_argument('--music', action='store_true', help='showcase with background music (kagura.music)')
     p.add_argument('--audio', help='dshow audio device to record with --video (HDMI audio of the capture)')
     p.add_argument('--out', type=Path)
     p.add_argument('--cps', type=float, default=8.0, help='characters per second (live)')
@@ -391,9 +391,6 @@ def main():
             b.run(free)
             b.run(lib)
             b.run(free)
-            if args.music:              # showcase_music's Music, defined before the show
-                show = show.replace('        from showcase_music import Music\n', '')
-                b.run(example('showcase_music.py'))
             b.run(show)
             b.run(free)
             b.run(SHOWCASE % (args.pace, args.music), timeout=900)

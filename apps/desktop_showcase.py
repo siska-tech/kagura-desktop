@@ -13,7 +13,7 @@ switched with F6 -> end card.
 On KAGURA-9 (the HDMI console running, firmware with the editor):
     import desktop_showcase; desktop_showcase.main()                  # about 2 minutes
     desktop_showcase.main(pace=1.5)                                  # slower
-    desktop_showcase.main(music=True)                                # with PSG background music
+    desktop_showcase.main(music=True)                                # with background music (kagura.music)
 On a PC (unix port):
     micropython desktop_showcase.py --host DIR [--dump D]           # a CRC per scene
 
@@ -40,31 +40,59 @@ def sleep_ms(ms):
             time.sleep(ms / 1000)
 
 
+def interlude():
+    """The quiet PSG interlude for the cards (Am/F/C/G, 120 BPM) as a KSNG
+    song for kagura.music: an arpeggio on pulse voice 0 (25% duty) and the
+    root two octaves lower on voice 2 (50%), one row every 125 ms (tempo 120,
+    speed 6). The three-note arpeggio over 64 rows repeats after 192 rows,
+    hence three patterns."""
+    from kagura.music import Song, Pattern, instrument, KIND_PULSE
+    chords = ((57, 60, 64), (57, 60, 65), (55, 60, 64), (55, 59, 62))   # MIDI notes
+    s = Song(voices=(0, 2))
+    s.title = 'SHOWCASE'
+    s.tempo, s.speed = 120, 6
+    s.instruments = [instrument(KIND_PULSE, 64, 1), instrument(KIND_PULSE, 128, 1)]
+    s.patterns = []
+    for p in range(3):
+        pat = Pattern(64, 2)
+        for row in range(64):
+            n = p * 64 + row
+            chord = chords[n // 16 & 3]
+            notes = [(0, chord[n % 3] + 12, 0)]
+            if n % 32 == 0:                     # the root changes every two chords
+                notes.append((1, chord[0] - 12, 1))
+            for track, midi, inst in notes:
+                o = pat.offset(row, track)
+                pat.cells[o] = midi - 11        # KSNG note 1 is MIDI 12 (C-0)
+                pat.cells[o + 1] = inst
+        s.patterns.append(pat)
+    s.orders = [0, 1, 2]
+    return s.to_bytes()
+
+
 class Bgm:
-    """Background music from showcase_music (PSG on the FPGA, while the GUI
-    runs). The music only changes notes when play() is called, so the show
-    calls it every frame and every 5 ms while it waits; how late each note
-    starts is recorded."""
-    def __init__(self, music):
-        self.music = music
-        self.notes = self.late_max = self.late_sum = self.late_over = 0
+    """Background music through kagura.music (the board's synthesizer, while
+    the GUI runs). The player only advances when pump() runs, so the show
+    pumps every frame (desk.present()) and every 5 ms while it waits; the
+    player records how late its ticks ran."""
+    def __init__(self, desk):
+        from kagura.music import AudioSession
+        self.audio = AudioSession(desk.device)
+        self.audio.load(interlude())
+        self.audio.play()
+        desk.audio = self.audio                 # present() pumps it too
 
     def play(self):
-        late = time.ticks_diff(time.ticks_us(), self.music.next)
-        if late < 0:
-            return
-        self.music.play()
-        self.notes += 1
-        self.late_sum += late
-        if late > self.late_max:
-            self.late_max = late
-        if late > 20000:
-            self.late_over += 1
+        self.audio.pump()
+
+    def stop(self):
+        self.audio.close()
 
     def report(self):
-        n = self.notes or 1
-        return 'MUSIC notes %d late_mean %.1f ms late_max %.1f ms over_20ms %d' % (
-            self.notes, self.late_sum / n / 1000, self.late_max / 1000, self.late_over)
+        s = self.audio.stats()
+        n = s['ticks'] or 1
+        return 'MUSIC ticks %d late_mean %.1f ms late_max %.1f ms' % (
+            s['ticks'], s['late_sum_us'] / n / 1000, s['late_max_us'] / 1000)
 
 
 class Show:
@@ -248,15 +276,15 @@ def main(desk=None, docs=None, out=print, pace=1.0, dump=None, music=False):
 
     bgm = None
     if music and own:                                    # needs the board's audio
-        from showcase_music import Music
-        bgm = Bgm(Music(desk.device))
+        bgm = Bgm(desk)
     try:
         desk.present()
         chapters(Show(desk, docs, step, pace if own else 0, bgm=bgm))
     finally:
         if bgm is not None:
-            bgm.music.stop()
             out(bgm.report())
+            bgm.stop()
+            desk.audio = None
         if own:
             desk.close()
 

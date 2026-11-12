@@ -38,6 +38,7 @@ MICROPYPATH="$PY" "$MP" "$ROOT/tests/test_skk.py"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 MICROPYPATH="$APPS" "$MP" "$ROOT/tests/test_tracker.py" "$TMP"
+MICROPYPATH="$APPS" "$MP" "$ROOT/tests/test_showcase_music.py"
 cmp "$TMP/demo/DEMO.KSN" "$SDK_SONGS/demo.ksn"
 cmp "$TMP/demo/DEMO.H" "$SDK_SONGS/demo.h"
 "$MP" "$ROOT/apps/desktop_ja.py" --host
