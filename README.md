@@ -30,7 +30,7 @@ The desktop is an application of the SDK. It uses only the SDK's public interfac
 | `software/micropython/fonts/misaki8.kfnt` | the Japanese font, embedded unchanged |
 | `tools/build-micropython-unix.sh`, `tools/rp2040-firmware.py`, `tools/rp2040_sram_bench.py` | unix port builds, flashing, device helpers |
 
-Scripts find the SDK checkout in `KAGURA_SDK_DIR`, by default the sibling directory `../kagura`, and MicroPython v1.26.0 in `MPY_DIR`, by default the SDK's `build/micropython-src`.
+Scripts find the SDK checkout in `KAGURA_SDK_DIR`, by default the sibling directory `../kagura`, and MicroPython v1.26.0 in `MPY_DIR`, by default the SDK's `build/micropython-src`. The SDK commit this repository is tested with is pinned in `sdk/kagura.ref` (siska-tech/kagura 94b4e57, the merge of siska-tech/kagura#96); only `sdk/` knows the SDK's layout ([sdk/README.md](sdk/README.md)).
 
 ```python
 from kdesk.desktop import Desktop

@@ -11,6 +11,8 @@ kagura-desktop uses the KAGURA SDK only through the files listed here. These fou
 
 The checkout is `KAGURA_SDK_DIR`, by default the sibling directory `../kagura`.
 
+`kagura.ref` pins the SDK commit this repository is tested with: CI checks it out, and `tools/test.sh` says so when the local checkout is elsewhere. Move it forward in its own commit, after the desktop's tests pass against the new SDK commit.
+
 | Name | Path in the SDK | What |
 |---|---|---|
 | `PYTHON` | `software/micropython` | the `kagura` package (MicroPython path) |
