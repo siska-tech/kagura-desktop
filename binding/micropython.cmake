@@ -3,7 +3,7 @@
 # adds it by default (boards/KAGURA_PICO/mpconfigboard.cmake); elsewhere:
 #   make -C ports/rp2 USER_C_MODULES=<repo>/binding/micropython.cmake
 # (firmware/usermods.cmake adds the SDK's kagura_audio as well). The font comes
-# from the KAGURA SDK: $KAGURA_SDK_DIR, else a sibling checkout ../kagura.
+# from the KAGURA SDK: $KAGURA_SDK_DIR, else a sibling checkout ../kagura-sdk.
 add_library(usermod_kagura_desktop INTERFACE)
 
 set(KD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)

@@ -3,7 +3,7 @@
 A GEM-style desktop in C for KAGURA-9, with Japanese text, built into KAGURA MicroPython firmware so that Python applications can use it: windows and menus, the 神楽メモ帳 editor, SKK Japanese input and the 神楽トラッカー music tracker.
 It grew out of `experiments/c-gem-desktop` (siska-tech/kagura#68: design, tests, RP2040 and HDMI acceptance) and its MicroPython binding (siska-tech/kagura#75, stage 3A).
 
-This repository was split from [the KAGURA SDK](https://github.com/siska-tech/kagura) (siska-tech/kagura) with its history; earlier pull requests are referenced as `siska-tech/kagura#N`.
+This repository was split from [siska-tech/kagura](https://github.com/siska-tech/kagura) with its history; earlier pull requests are referenced as `siska-tech/kagura#N`. It depends only on [the KAGURA SDK](https://github.com/siska-tech/kagura-sdk) (siska-tech/kagura-sdk), which was split from the same repository afterwards; the hardware (RTL, register spec, bitstreams) stays in siska-tech/kagura and is never used directly.
 
 ## Validation status
 
@@ -13,6 +13,7 @@ The split into this repository (2026-11-12) was verified in software only: the h
 - HDMI rendering and VRAM readback through `TilePlane.read()` (`tools/kagura-desktop-device.py`).
 - Desktop, editor and SKK functionality on the board (`tools/kagura-keyboard-device.py`, `tools/kagura-editor-board.py`).
 - 神楽トラッカー on the board (`tools/kagura-audio-board.py`).
+- The showcase's background music, played through `kagura.music` since siska-tech/kagura-desktop#1 (`tools/kagura-editor-board.py --music`): sound and timing while the GUI runs.
 - Firmware integration on the RP2040: the UF2 from `tools/build_firmware.sh` (SDK board + `kagura_desktop` + frozen `kdesk`) has not been flashed.
 
 The hardware logs in `docs/hardware/` were recorded before the split, with firmware built from siska-tech/kagura (modules `kagura.desktop`, `kagura.keyinput`, `kagura.skk`). They remain the reference results for that firmware and do not validate this repository's builds. The board tools now load `kdesk`, so they need firmware built from this repository.
@@ -30,7 +31,7 @@ The desktop is an application of the SDK. It uses only the SDK's public interfac
 | `software/micropython/fonts/misaki8.kfnt` | the Japanese font, embedded unchanged |
 | `tools/build-micropython-unix.sh`, `tools/rp2040-firmware.py`, `tools/rp2040_sram_bench.py` | unix port builds, flashing, device helpers |
 
-Scripts find the SDK checkout in `KAGURA_SDK_DIR`, by default the sibling directory `../kagura`, and MicroPython v1.26.0 in `MPY_DIR`, by default the SDK's `build/micropython-src`. The SDK commit this repository is tested with is pinned in `sdk/kagura.ref` (siska-tech/kagura 94b4e57, the merge of siska-tech/kagura#96); only `sdk/` knows the SDK's layout ([sdk/README.md](sdk/README.md)).
+Scripts find the SDK checkout in `KAGURA_SDK_DIR`, by default the sibling directory `../kagura-sdk`, and MicroPython v1.26.0 in `MPY_DIR`, by default the SDK's `build/micropython-src`. The SDK commit this repository is tested with is pinned in `sdk/kagura-sdk.ref` (siska-tech/kagura-sdk aae8699, the SDK as split from siska-tech/kagura c6ae031); only `sdk/` knows the SDK's layout ([sdk/README.md](sdk/README.md)).
 
 ```python
 from kdesk.desktop import Desktop
@@ -236,9 +237,9 @@ Design and measurements are in `experiments/c-gem-desktop/micropython/DESIGN.md`
 ## Build and test (WSL/Linux)
 
 ```sh
-git clone https://github.com/siska-tech/kagura ../kagura   # or set KAGURA_SDK_DIR
-git clone --depth 1 --branch v1.26.0 https://github.com/micropython/micropython ../kagura/build/micropython-src
-make -C ../kagura/build/micropython-src/mpy-cross
+git clone https://github.com/siska-tech/kagura-sdk ../kagura-sdk   # or set KAGURA_SDK_DIR
+git clone --depth 1 --branch v1.26.0 https://github.com/micropython/micropython ../kagura-sdk/build/micropython-src
+make -C ../kagura-sdk/build/micropython-src/mpy-cross
 bash tools/test.sh                         # host C tests, unix MicroPython tests, demos without hardware
 bash tools/build_firmware.sh [KAGURA_PICO_W]  # the SDK board's firmware (UF2) with the desktop
 ```

@@ -4,7 +4,7 @@
 # (KAGURA_PICO by default) and its modules, plus kagura_desktop
 # (firmware/usermods.cmake) and the kdesk package (firmware/manifest.py).
 # Needs the Arm GNU toolchain, the KAGURA SDK checkout (KAGURA_SDK_DIR, default
-# ../kagura) and an initialised MicroPython tree (MPY_DIR, default the SDK's
+# ../kagura-sdk) and an initialised MicroPython tree (MPY_DIR, default the SDK's
 # build/micropython-src; see the SDK's software/micropython/README.md). WSL/Linux:
 #   bash tools/build_firmware.sh [BOARD] [BUILD_DIR_NAME]
 # Prints the UF2 path; the SDK's tools/rp2040-firmware.py flashes it with checks.

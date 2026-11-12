@@ -1,6 +1,6 @@
 name: kagura-desktop
-# Tests and firmware against the KAGURA SDK (siska-tech/kagura) at the commit
-# pinned in sdk/kagura.ref. A manual run can test another SDK ref instead.
+# Tests and firmware against the KAGURA SDK (siska-tech/kagura-sdk) at the commit
+# pinned in sdk/kagura-sdk.ref. A manual run can test another SDK ref instead.
 on:
   push:
     branches: [main]
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       sdk_ref:
-        description: 'SDK commit, tag or branch (default: sdk/kagura.ref)'
+        description: 'SDK commit, tag or branch (default: sdk/kagura-sdk.ref)'
         required: false
 permissions:
   contents: read
@@ -18,8 +18,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 env:
-  KAGURA_SDK_DIR: ${{ github.workspace }}/kagura
-  MPY_DIR: ${{ github.workspace }}/kagura/build/micropython-src
+  KAGURA_SDK_DIR: ${{ github.workspace }}/kagura-sdk
+  MPY_DIR: ${{ github.workspace }}/kagura-sdk/build/micropython-src
 jobs:
   test:
     runs-on: ubuntu-24.04
@@ -27,15 +27,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: kagura-desktop
-      - name: SDK commit (sdk/kagura.ref)
+      - name: SDK commit (sdk/kagura-sdk.ref)
         env:
           SDK_REF_INPUT: ${{ inputs.sdk_ref }}
-        run: echo "KAGURA_SDK_REF=${SDK_REF_INPUT:-$(cat kagura-desktop/sdk/kagura.ref)}" >> "$GITHUB_ENV"
+        run: echo "KAGURA_SDK_REF=${SDK_REF_INPUT:-$(cat kagura-desktop/sdk/kagura-sdk.ref)}" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
-          repository: siska-tech/kagura
+          repository: siska-tech/kagura-sdk
           ref: ${{ env.KAGURA_SDK_REF }}
-          path: kagura
+          path: kagura-sdk
       - name: Fetch pinned MicroPython
         run: |
           git clone --depth 1 --branch v1.26.0 https://github.com/micropython/micropython.git "$MPY_DIR"
@@ -58,15 +58,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: kagura-desktop
-      - name: SDK commit (sdk/kagura.ref)
+      - name: SDK commit (sdk/kagura-sdk.ref)
         env:
           SDK_REF_INPUT: ${{ inputs.sdk_ref }}
-        run: echo "KAGURA_SDK_REF=${SDK_REF_INPUT:-$(cat kagura-desktop/sdk/kagura.ref)}" >> "$GITHUB_ENV"
+        run: echo "KAGURA_SDK_REF=${SDK_REF_INPUT:-$(cat kagura-desktop/sdk/kagura-sdk.ref)}" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
-          repository: siska-tech/kagura
+          repository: siska-tech/kagura-sdk
           ref: ${{ env.KAGURA_SDK_REF }}
-          path: kagura
+          path: kagura-sdk
       - name: Install toolchain and pinned MicroPython
         run: |
           sudo apt-get update
@@ -81,4 +81,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: kagura-desktop-${{ matrix.board }}
-          path: kagura/build/micropython-src/ports/rp2/build-${{ matrix.board }}/firmware.uf2
+          path: kagura-sdk/build/micropython-src/ports/rp2/build-${{ matrix.board }}/firmware.uf2

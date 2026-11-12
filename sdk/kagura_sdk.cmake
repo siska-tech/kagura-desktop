@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 # The KAGURA SDK's layout for CMake (sdk/README.md): KAGURA_SDK_DIR, else
-# $KAGURA_SDK_DIR, else the sibling directory ../kagura.
+# $KAGURA_SDK_DIR, else the sibling directory ../kagura-sdk.
 if(NOT KAGURA_SDK_DIR)
     if(DEFINED ENV{KAGURA_SDK_DIR})
         set(KAGURA_SDK_DIR $ENV{KAGURA_SDK_DIR})
     else()
-        get_filename_component(KAGURA_SDK_DIR ${CMAKE_CURRENT_LIST_DIR}/../../kagura ABSOLUTE)
+        get_filename_component(KAGURA_SDK_DIR ${CMAKE_CURRENT_LIST_DIR}/../../kagura-sdk ABSOLUTE)
     endif()
 endif()
 set(KAGURA_SDK_FONT ${KAGURA_SDK_DIR}/software/micropython/fonts/misaki8.kfnt)

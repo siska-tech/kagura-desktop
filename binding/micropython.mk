@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # kagura_desktop user C module for Make ports (e.g. unix):
 #   make -C ports/unix USER_C_MODULES=<repo>/usermods
-# The font comes from the KAGURA SDK: KAGURA_SDK_DIR, else a sibling ../kagura.
+# The font comes from the KAGURA SDK: KAGURA_SDK_DIR, else a sibling ../kagura-sdk.
 KD_MOD_DIR := $(USERMOD_DIR)
 KD_ROOT := $(KD_MOD_DIR)/..
 include $(KD_ROOT)/sdk/kagura_sdk.mk
