@@ -9,9 +9,9 @@ kagura-desktop uses the KAGURA SDK only through the files listed here. These fou
 | `kagura_sdk.mk` | Make: the unix port's `binding/micropython.mk` and `usermods/` |
 | `kagura_sdk.py` | Python tools (`tools/*.py`, the experiments' tools) |
 
-The checkout is `KAGURA_SDK_DIR`, by default the sibling directory `../kagura`.
+The checkout is `KAGURA_SDK_DIR`, by default the sibling directory `../kagura-sdk`.
 
-`kagura.ref` pins the SDK commit this repository is tested with: CI checks it out, and `tools/test.sh` says so when the local checkout is elsewhere. Move it forward in its own commit, after the desktop's tests pass against the new SDK commit.
+`kagura-sdk.ref` pins the SDK commit this repository is tested with: CI checks it out, and `tools/test.sh` says so when the local checkout is elsewhere. Move it forward in its own commit, after the desktop's tests pass against the new SDK commit.
 
 | Name | Path in the SDK | What |
 |---|---|---|

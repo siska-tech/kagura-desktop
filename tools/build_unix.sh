@@ -4,7 +4,7 @@
 # kagura_audio (usermods/), through the SDK's tools/build-micropython-unix.sh,
 # and prints the binary's path. From anywhere (WSL/Linux):
 #   bash tools/build_unix.sh
-# KAGURA_SDK_DIR defaults to ../kagura; MPY_DIR to the SDK's build/micropython-src.
+# KAGURA_SDK_DIR defaults to ../kagura-sdk; MPY_DIR to the SDK's build/micropython-src.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 . "$ROOT/sdk/paths.sh"

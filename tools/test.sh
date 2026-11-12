@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 # Tests of kagura-desktop, from anywhere (WSL/Linux). Needs the KAGURA SDK
-# checkout (KAGURA_SDK_DIR, default ../kagura) and MicroPython v1.26.0 with
+# checkout (KAGURA_SDK_DIR, default ../kagura-sdk) and MicroPython v1.26.0 with
 # mpy-cross (MPY_DIR, default the SDK's build/micropython-src); sdk/paths.sh:
 #   1. host build: text engine (UTF-8, all Misaki glyphs), editing core and
 #      4 mutants, kdm (with fields, the editor and keyboard focus) and 10 mutants;
@@ -20,9 +20,9 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 . "$ROOT/sdk/paths.sh"
-PIN="$(cat "$ROOT/sdk/kagura.ref")"
+PIN="$(cat "$ROOT/sdk/kagura-sdk.ref")"
 HEAD="$(git -C "$SDK" rev-parse HEAD 2>/dev/null || echo unknown)"
-[ "$HEAD" = "$PIN" ] || echo "note: the SDK is at $HEAD; CI tests sdk/kagura.ref $PIN" >&2
+[ "$HEAD" = "$PIN" ] || echo "note: the SDK is at $HEAD; CI tests sdk/kagura-sdk.ref $PIN" >&2
 OUT="${OUT:-$ROOT/build/desktop}"
 cmake -S "$ROOT" -B "$OUT" -DCMAKE_BUILD_TYPE=Release -DKAGURA_SDK_DIR="$KAGURA_SDK_DIR" >/dev/null
 cmake --build "$OUT" -j"$(nproc)" >/dev/null

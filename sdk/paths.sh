@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # The KAGURA SDK's layout for shell scripts (sdk/README.md). Source it after
 # setting ROOT to this repository's root. Exports KAGURA_SDK_DIR (absolute).
-export KAGURA_SDK_DIR="$(cd "${KAGURA_SDK_DIR:-$ROOT/../kagura}" && pwd)"
+export KAGURA_SDK_DIR="$(cd "${KAGURA_SDK_DIR:-$ROOT/../kagura-sdk}" && pwd)"
 SDK="$KAGURA_SDK_DIR"
 SDK_PYTHON="$SDK/software/micropython"
 SDK_BOARDS="$SDK_PYTHON/boards"

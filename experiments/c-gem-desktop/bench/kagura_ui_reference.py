@@ -17,7 +17,7 @@ operations), whose RP2040 timings are recorded in docs/kagura-ui-damage.md;
 the sprite workloads use examples/ui_sprite_editor.py as in #67.
 Host times are not RP2040 times.
 
-  python3 -I bench/kagura_ui_reference.py --backend sdk   # KAGURA_SDK_DIR, else ../kagura
+  python3 -I bench/kagura_ui_reference.py --backend sdk   # KAGURA_SDK_DIR, else ../kagura-sdk
   (from the KAGURA SDK checkout, giving this file's path)
   MICROPYPATH=software/micropython:software/micropython/examples \
       micropython bench/kagura_ui_reference.py --backend framebuf
