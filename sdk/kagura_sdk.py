@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-DIR = Path(os.environ.get('KAGURA_SDK_DIR') or REPO.parent / 'kagura').resolve()
+DIR = Path(os.environ.get('KAGURA_SDK_DIR') or REPO.parent / 'kagura-sdk').resolve()
 PYTHON = DIR / 'software/micropython'
 BOARDS = PYTHON / 'boards'
 FONT = PYTHON / 'fonts/misaki8.kfnt'
